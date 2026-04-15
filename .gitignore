@@ -1,0 +1,47 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.sln.docstates
+*.VC.db
+*.VC.VC.opendb
+ipch/
+x64/
+x86/
+Debug/
+Release/
+*.ncb
+*.sdf
+*.opensdf
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.dll
+
+# Build outputs
+*.exe
+*.obj
+*.o
+*.pch
+*.idb
+
+# CMake (if used)
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+build/
+out/
+
+# Raylib
+# (Raylib doesn't generate persistent files at runtime by default)
+
+# ImGui
+imgui.ini
+
+# General
+*.log
+*.tmp
+*.bak
+Thumbs.db
+.DS_Store
