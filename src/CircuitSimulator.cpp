@@ -135,7 +135,6 @@ void CircuitSimulator::Run()
         float deltaTime = GetFrameTime();
         HandleInput();
         Update(deltaTime);
-        UI();
         Draw();
     }
 }
