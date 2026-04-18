@@ -51,7 +51,7 @@ private:
 
 	Camera2D camera;
 	const float zoom_levels[6] = { 0.33f, 0.45f, 0.60f, 0.75f, 0.90f, 1.00f };
-	int current_zoom_index = 5; // Start at 1.0 (index 5)
+	int current_zoom_index = 5; 
 
 	MouseState current_mouse_state = Idle;
 	PanningContext panning_context;

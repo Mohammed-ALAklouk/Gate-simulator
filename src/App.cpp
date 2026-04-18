@@ -3,9 +3,16 @@
 App::App()
 {
     SetTraceLogLevel(LOG_ERROR);
+
+    SetConfigFlags(FLAG_WINDOW_HIDDEN | FLAG_WINDOW_RESIZABLE);
     InitWindow(window_width, window_height, "GateSimulator");
+    MaximizeWindow();
+    ClearWindowState(FLAG_WINDOW_HIDDEN);
+    
     SetTargetFPS(60);
     rlImGuiSetup(true);
+
+
 
     panning_context = { 0, 0 };
     dragging_context = { nullptr, {0, 0}, {0, 0} };
@@ -23,6 +30,12 @@ App::~App()
 
 void App::HandleInput()
 {
+    if (IsWindowResized())
+    {
+		window_height = GetScreenHeight();
+		window_width = GetScreenWidth();
+        camera.offset = Vector2{ window_width / 2.0f, window_height / 2.0f };
+    }
 }
 
 void App::Update(float deltaTime)
