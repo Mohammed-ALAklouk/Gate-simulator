@@ -18,6 +18,10 @@ Release/
 *.exp
 *.lib
 *.dll
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
 
 # Build outputs
 *.exe
