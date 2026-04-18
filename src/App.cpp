@@ -20,6 +20,8 @@ App::App()
     camera = { 0 };
     camera.offset = Vector2{ window_width / 2.0f, window_height / 2.0f };
     camera.zoom = 1;
+
+	draggable = Draggable({0,0,100,100}, RED, "Draggable");
 }
 
 App::~App()
@@ -49,12 +51,12 @@ void App::Update(float deltaTime)
         {
 			auto mouse_pos = GetScreenToWorld2D(GetMousePosition(), camera);
 
-            if (CheckCollisionPointRec(mouse_pos, draggable.rect))
+            if (draggable.containsPoint(mouse_pos))
             {
 				current_mouse_state = Dragging; 
 				dragging_context.draggable = &draggable;
 				dragging_context.initial_mouse_pos = mouse_pos;
-				dragging_context.initial_draggable_pos = { draggable.rect.x, draggable.rect.y };
+				dragging_context.initial_draggable_pos = draggable.getPosition();
             }
             else
             {
@@ -105,8 +107,10 @@ void App::Update(float deltaTime)
 		delta.x = round(delta.x / cell_size) * cell_size;
 		delta.y = round(delta.y / cell_size) * cell_size;
 
-        dragging_context.draggable->rect.x = dragging_context.initial_draggable_pos.x + delta.x;
-        dragging_context.draggable->rect.y = dragging_context.initial_draggable_pos.y + delta.y;
+        dragging_context.draggable->setPosition({
+            dragging_context.initial_draggable_pos.x + delta.x,
+            dragging_context.initial_draggable_pos.y + delta.y
+        });
 	}
         break;
     }
@@ -138,10 +142,13 @@ void App::Draw() const
     ClearBackground(darkTheme.background);
 
     DrawGrid();
-	DrawRectangleRec(draggable.rect, darkTheme.logicHigh);
+
+	draggable.render();
+
 	auto top_left = GetScreenToWorld2D({ 0, 0 }, camera);
 	DrawText(("State: " + std::string((current_mouse_state == Idle) ? "Idle" : (current_mouse_state == Panning) ? "Panning" : "Dragging")).c_str(), 
         top_left.x, top_left.y, 20, RED);
+    
     EndMode2D();
 
     UI();
