@@ -1,4 +1,4 @@
-#include "CircuitSimulator.h"
+#include "App.h"
 
 App::App()
 {
