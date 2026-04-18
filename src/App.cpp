@@ -1,6 +1,6 @@
 #include "CircuitSimulator.h"
 
-CircuitSimulator::CircuitSimulator()
+App::App()
 {
     SetTraceLogLevel(LOG_ERROR);
     InitWindow(window_width, window_height, "GateSimulator");
@@ -14,17 +14,17 @@ CircuitSimulator::CircuitSimulator()
     camera.zoom = 1;
 }
 
-CircuitSimulator::~CircuitSimulator()
+App::~App()
 {
     rlImGuiShutdown();
     CloseWindow();
 }
 
-void CircuitSimulator::HandleInput()
+void App::HandleInput()
 {
 }
 
-void CircuitSimulator::Update(float deltaTime)
+void App::Update(float deltaTime)
 {
     switch (current_mouse_state) {
     case Idle:
@@ -74,13 +74,13 @@ void CircuitSimulator::Update(float deltaTime)
     }
 }
 
-void CircuitSimulator::UI() const
+void App::UI() const
 {
     rlImGuiBegin();
     rlImGuiEnd();
 }
 
-void CircuitSimulator::Draw() const
+void App::Draw() const
 { 
     BeginDrawing();
 
@@ -95,7 +95,7 @@ void CircuitSimulator::Draw() const
     EndDrawing();
 }
 
-void CircuitSimulator::DrawGrid() const     
+void App::DrawGrid() const     
 {
     Vector2 min = GetScreenToWorld2D({ 0, 0 }, camera);
     Vector2 max = GetScreenToWorld2D({ (float)GetScreenWidth(), (float)GetScreenHeight() }, camera);
@@ -131,7 +131,7 @@ void CircuitSimulator::DrawGrid() const
     }
 }
 
-void CircuitSimulator::Run()
+void App::Run()
 {
     while (!WindowShouldClose())
     {

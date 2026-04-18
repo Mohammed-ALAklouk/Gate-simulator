@@ -1,8 +1,8 @@
-#include "CircuitSimulator.h"
+#include "App.h"
 
 int main()
 {
-    CircuitSimulator simulator;
-    simulator.Run();
+    App app;
+    app.Run();
     return 0;
 }

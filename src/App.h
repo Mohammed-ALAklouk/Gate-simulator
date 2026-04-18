@@ -20,11 +20,11 @@ struct UITheme {
 
 
 
-class CircuitSimulator
+class App
 {
 public:
-	CircuitSimulator();
-	~CircuitSimulator();
+	App();
+	~App();
 	void Run();
 	
 private:
