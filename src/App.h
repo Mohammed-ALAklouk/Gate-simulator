@@ -1,12 +1,21 @@
 #pragma once
+#include <math.h>
+#include <string>
+
 #include "raylib.h"
 #include "rlImGui.h"
 #include "imgui.h"
-#include <iostream>
+#include "Draggable.h"
 
 struct PanningContext {
 	Vector2 initial_pos;
 	Vector2 initial_target;
+};
+
+struct DraggingContext {
+	Draggable* draggable;
+	Vector2 initial_mouse_pos;
+	Vector2 initial_draggable_pos;
 };
 
 struct UITheme {
@@ -38,7 +47,7 @@ private:
 	int window_width = 800;
 	int window_height = 450;
 
-	typedef enum { Idle, Panning } MouseState;
+	typedef enum { Idle, Panning, Dragging } MouseState;
 
 	Camera2D camera;
 	const float zoom_levels[6] = { 0.33f, 0.45f, 0.60f, 0.75f, 0.90f, 1.00f };
@@ -46,6 +55,13 @@ private:
 
 	MouseState current_mouse_state = Idle;
 	PanningContext panning_context;
+	DraggingContext dragging_context;
+
+	Draggable draggable;
+
+	int major_step = 5;
+	float grid_line_minor_thinkness = 0.8f;
+	float grid_line_major_thinkness = 1.5f;
 
 
 	UITheme darkTheme = {
