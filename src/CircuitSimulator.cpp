@@ -8,6 +8,8 @@ CircuitSimulator::CircuitSimulator()
     rlImGuiSetup(true);
 
     panning_context = { 0, 0 };
+    
+    camera = { 0 };
     camera.offset = Vector2{ window_width / 2.0f, window_height / 2.0f };
     camera.zoom = 1;
 }
@@ -64,20 +66,21 @@ void CircuitSimulator::Update(float deltaTime)
     if (zoom_change)
     {
         int index = current_zoom_index + zoom_change;
-        if (index >= 0 && index < 6) {
+        int max_zoom_index = sizeof(zoom_levels) / sizeof(zoom_levels[0]);
+        if (index >= 0 && index < max_zoom_index) {
             current_zoom_index = index;
             camera.zoom = zoom_levels[current_zoom_index];
         }
     }
 }
 
-void CircuitSimulator::UI()
+void CircuitSimulator::UI() const
 {
     rlImGuiBegin();
     rlImGuiEnd();
 }
 
-void CircuitSimulator::Draw()
+void CircuitSimulator::Draw() const
 { 
     BeginDrawing();
 
@@ -92,7 +95,7 @@ void CircuitSimulator::Draw()
     EndDrawing();
 }
 
-void CircuitSimulator::DrawGrid()
+void CircuitSimulator::DrawGrid() const     
 {
     Vector2 min = GetScreenToWorld2D({ 0, 0 }, camera);
     Vector2 max = GetScreenToWorld2D({ (float)GetScreenWidth(), (float)GetScreenHeight() }, camera);

@@ -30,10 +30,10 @@ public:
 private:
 	void HandleInput();
 	void Update(float deltaTime);
-	void UI();
-	void Draw();
+	void UI() const;
+	void Draw() const;
 
-	void DrawGrid();
+	void DrawGrid() const;
 	int cell_size = 20;
 	int window_width = 800;
 	int window_height = 450;

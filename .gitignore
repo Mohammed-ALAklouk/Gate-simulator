@@ -45,3 +45,6 @@ imgui.ini
 *.bak
 Thumbs.db
 .DS_Store
+
+# Whitelist Premake executable
+!premake5.exe
