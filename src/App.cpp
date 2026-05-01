@@ -12,16 +12,12 @@ App::App()
     SetTargetFPS(60);
     rlImGuiSetup(true);
 
-
-
     panning_context = { 0, 0 };
     dragging_context = { nullptr, {0, 0}, {0, 0} };
     
     camera = { 0 };
     camera.offset = Vector2{ window_width / 2.0f, window_height / 2.0f };
     camera.zoom = 1;
-
-	draggable = Draggable({0,0,100,100}, RED, "Draggable");
 }
 
 App::~App()
@@ -38,32 +34,60 @@ void App::HandleInput()
 		window_width = GetScreenWidth();
         camera.offset = Vector2{ window_width / 2.0f, window_height / 2.0f };
     }
+
+    if (IsMouseButtonDown(MouseButton::MOUSE_BUTTON_RIGHT) && !gate_placed)
+    {
+        auto mouse_pos = GetScreenToWorld2D(GetMousePosition(), camera);
+		circuit.addComponent(Component::Type::AND, mouse_pos);
+        gate_placed = true;
+    }
+
+    if (IsMouseButtonUp(MouseButton::MOUSE_BUTTON_RIGHT))
+        gate_placed = false;
 }
 
 void App::Update(float deltaTime)
 {
+	auto mouse_pos = GetScreenToWorld2D(GetMousePosition(), camera);
     switch (current_mouse_state) {
     case Idle:
     {
-
 		bool is_button_down = IsMouseButtonDown(MouseButton::MOUSE_BUTTON_LEFT);
         if (is_button_down)
         {
-			auto mouse_pos = GetScreenToWorld2D(GetMousePosition(), camera);
+			bool clicked_on_input_pin = false;
+			bool clicked_on_component = false;
 
-            if (draggable.containsPoint(mouse_pos))
-            {
-				current_mouse_state = Dragging; 
-				dragging_context.draggable = &draggable;
-				dragging_context.initial_mouse_pos = mouse_pos;
-				dragging_context.initial_draggable_pos = draggable.getPosition();
+            for (auto& Component : circuit.m_components) {
+                if (Component.outputPinContainsPoint(mouse_pos))
+                {
+					connecting_context.sourceComponentIndex = &Component - &circuit.m_components[0];
+                    connecting_context.targetPin = {0, 0};
+					current_mouse_state = Connecting;
+					clicked_on_input_pin = true;
+					break;
+                }
+            
             }
-            else
-            {
-                current_mouse_state = Panning;
-                panning_context.initial_pos = GetMousePosition();
-                panning_context.initial_target = camera.target;                     
+            
+			if (clicked_on_input_pin) break;
+
+            for (auto& component : circuit.m_components) {
+				if (component.containsPoint(mouse_pos)) {
+                    current_mouse_state = Dragging;
+                    dragging_context.draggable = &component.m_draggable;
+                    dragging_context.initial_mouse_pos = mouse_pos;
+                    dragging_context.initial_draggable_pos = component.m_draggable.getPosition();
+					clicked_on_component = true;
+                    break;
+                }
             }
+
+            if (clicked_on_component) break;
+            
+            current_mouse_state = Panning;
+            panning_context.initial_pos = GetMousePosition();
+            panning_context.initial_target = camera.target;                     
         }   
     }
 
@@ -113,7 +137,32 @@ void App::Update(float deltaTime)
         });
 	}
         break;
+
+    case Connecting:
+    {
+        if (IsMouseButtonUp(MouseButton::MOUSE_BUTTON_LEFT)) {
+            if (connecting_context.targetPin.ComponentIndex != -1) {
+				circuit.addWire({ connecting_context.sourceComponentIndex, 0 }, connecting_context.targetPin);
+            }
+            current_mouse_state = Idle;
+            break;
+		}
+
+		bool found_target = false;
+        for (auto& Component : circuit.m_components) {
+			auto input_pin_index = Component.inputPinsContainPoint(mouse_pos);
+            if (input_pin_index != -1) {
+                connecting_context.targetPin = { int(&Component - &circuit.m_components[0]), input_pin_index };
+				found_target = true;
+                break;
+			}
+        }
+
+		if (!found_target) 
+			connecting_context.targetPin = { -1, -1 };
     }
+        break;
+	}
 
     auto zoom_change = GetMouseWheelMove();
 
@@ -143,11 +192,30 @@ void App::Draw() const
 
     DrawGrid();
 
-	draggable.render();
+	circuit.draw();
+
+    if (current_mouse_state == Connecting)
+    {
+        Vector2 start = circuit.getComponent(connecting_context.sourceComponentIndex).getOutputPosition();
+        Vector2 end = GetScreenToWorld2D(GetMousePosition(), camera);
+        
+        if (connecting_context.targetPin.ComponentIndex != -1) {
+			 end = circuit.getComponent(connecting_context.targetPin.ComponentIndex).getInputPositions()[connecting_context.targetPin.PinIndex];
+		}
+
+        DrawLineEx(start, end, 3, LogicLevel::HIGH ? GREEN : RED);
+    }
 
 	auto top_left = GetScreenToWorld2D({ 0, 0 }, camera);
-	DrawText(("State: " + std::string((current_mouse_state == Idle) ? "Idle" : (current_mouse_state == Panning) ? "Panning" : "Dragging")).c_str(), 
-        top_left.x, top_left.y, 20, RED);
+    std::string state_text;
+    switch (current_mouse_state) {
+        case Idle: state_text = "Idle"; break;
+        case Panning: state_text = "Panning"; break;
+        case Dragging: state_text = "Dragging"; break;
+        case Connecting: state_text = "Connecting"; break;
+	}
+    
+    DrawText(("State: " + state_text).c_str(), top_left.x, top_left.y, 20, RED);
     
     EndMode2D();
 

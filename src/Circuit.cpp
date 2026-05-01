@@ -4,12 +4,12 @@ void Circuit::evaluate()
 {
 	for (auto& component : m_components)
 	{
-		evaluateComponent(component);
+		evaluateComponent(component.m_component);
 	}
 
 	for (auto& wire : m_wires)
 	{
-		wire.value = m_components[wire.input.ComponentIndex].m_output_pin.value;
+		wire.value = m_components[wire.input.ComponentIndex].m_component.m_output_pin.value;
 	}
 }
 

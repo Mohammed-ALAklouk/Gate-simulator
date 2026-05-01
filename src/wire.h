@@ -4,5 +4,6 @@
 struct Wire 
 {
 	PinRef input;
+	PinRef output;
 	LogicLevel value;
 };

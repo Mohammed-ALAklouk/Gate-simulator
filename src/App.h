@@ -5,7 +5,8 @@
 #include "raylib.h"
 #include "rlImGui.h"
 #include "imgui.h"
-#include "Draggable.h"
+#include "LogicNode.h"
+#include "Circuit.h"
 
 struct PanningContext {
 	Vector2 initial_pos;
@@ -16,6 +17,12 @@ struct DraggingContext {
 	Draggable* draggable;
 	Vector2 initial_mouse_pos;
 	Vector2 initial_draggable_pos;
+};
+
+struct ConnectingContext {
+	int sourceComponentIndex;
+
+	PinRef targetPin;
 };
 
 struct UITheme {
@@ -47,7 +54,7 @@ private:
 	int window_width = 800;
 	int window_height = 450;
 
-	typedef enum { Idle, Panning, Dragging } MouseState;
+	typedef enum { Idle, Panning, Dragging, Connecting } MouseState;
 
 	Camera2D camera;
 	const float zoom_levels[6] = { 0.33f, 0.45f, 0.60f, 0.75f, 0.90f, 1.00f };
@@ -56,8 +63,11 @@ private:
 	MouseState current_mouse_state = Idle;
 	PanningContext panning_context;
 	DraggingContext dragging_context;
+	ConnectingContext connecting_context;
 
-	Draggable draggable;
+	Circuit circuit;
+
+	bool gate_placed = false;
 
 	int major_step = 5;
 	float grid_line_minor_thinkness = 0.8f;
