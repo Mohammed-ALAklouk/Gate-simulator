@@ -54,6 +54,14 @@ class LogicNode
 		return -1;
 	}
 
+	int get_wire_index_for_input_pin(int pinIndex) const {
+		if (pinIndex < 0 || pinIndex >= m_component.m_input_wires.size()) {
+			return -1;
+		}
+
+		return m_component.m_input_wires[pinIndex];
+	}
+
 	bool outputPinContainsPoint(Vector2 point) const {
 		auto outputPosition = getOutputPosition();
 		Vector2 translation = { point.x - outputPosition.x, point.y - outputPosition.y };

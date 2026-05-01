@@ -46,8 +46,8 @@ public:
 private:
 	void HandleInput();
 	void Update(float deltaTime);
-	void UI() const;
-	void Draw() const;
+	void UI();
+	void Draw() ;
 
 	void DrawGrid() const;
 	int cell_size = 20;
@@ -61,6 +61,8 @@ private:
 	int current_zoom_index = 5; 
 
 	MouseState current_mouse_state = Idle;
+	Component::Type selected_component_type = Component::Type::AND;
+
 	PanningContext panning_context;
 	DraggingContext dragging_context;
 	ConnectingContext connecting_context;
@@ -68,6 +70,7 @@ private:
 	Circuit circuit;
 
 	bool gate_placed = false;
+	bool space_was_pressed = false;
 
 	int major_step = 5;
 	float grid_line_minor_thinkness = 0.8f;

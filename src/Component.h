@@ -10,7 +10,10 @@ public:
 	{
 		AND,
 		OR,
-		NOT
+		NOT,
+		HIGH,
+		LOW,
+		COMPONENT_COUNT
 	};
 
 private:
@@ -30,6 +33,8 @@ private:
 	static LogicLevel AndLookupTable[9];
 	static LogicLevel OrLookupTable[9];
 	static LogicLevel NotLookupTable[3];
+	static LogicLevel HighLookupTable[3];
+	static LogicLevel LowLookupTable[3];
 public:
 
 	Component(Type type)
@@ -42,6 +47,12 @@ public:
 		{
 		case Type::NOT:
 			m_output_pin.value = LookupTables[m_type][input_values[0]];
+			break;
+		case Type::HIGH:
+			m_output_pin.value = LookupTables[m_type][0];
+			break;
+		case Type::LOW:
+			m_output_pin.value = LookupTables[m_type][0];
 			break;
 		default:
 			m_output_pin.value = lookup2D(m_type, input_values[0], input_values[1]);

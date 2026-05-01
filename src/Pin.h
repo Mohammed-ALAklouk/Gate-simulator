@@ -1,4 +1,11 @@
 #pragma once
+#include <raylib.h>
+
+static Color LogicLevelColors[] = {
+	GRAY, // LOW
+	GREEN, // HIGH
+	RED // UNDEFINED
+};
 
 enum LogicLevel
 {

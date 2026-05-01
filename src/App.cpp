@@ -38,12 +38,15 @@ void App::HandleInput()
     if (IsMouseButtonDown(MouseButton::MOUSE_BUTTON_RIGHT) && !gate_placed)
     {
         auto mouse_pos = GetScreenToWorld2D(GetMousePosition(), camera);
-		circuit.addComponent(Component::Type::AND, mouse_pos);
+		circuit.addComponent(selected_component_type, mouse_pos);
         gate_placed = true;
     }
 
     if (IsMouseButtonUp(MouseButton::MOUSE_BUTTON_RIGHT))
         gate_placed = false;
+
+    if(IsKeyPressed(KEY_SPACE))
+		circuit.evaluate();
 }
 
 void App::Update(float deltaTime)
@@ -143,6 +146,7 @@ void App::Update(float deltaTime)
         if (IsMouseButtonUp(MouseButton::MOUSE_BUTTON_LEFT)) {
             if (connecting_context.targetPin.ComponentIndex != -1) {
 				circuit.addWire({ connecting_context.sourceComponentIndex, 0 }, connecting_context.targetPin);
+				circuit.set_component_input_wire(connecting_context.targetPin.ComponentIndex, connecting_context.targetPin.PinIndex, circuit.m_wires.size() - 1);
             }
             current_mouse_state = Idle;
             break;
@@ -151,7 +155,8 @@ void App::Update(float deltaTime)
 		bool found_target = false;
         for (auto& Component : circuit.m_components) {
 			auto input_pin_index = Component.inputPinsContainPoint(mouse_pos);
-            if (input_pin_index != -1) {
+            
+            if (input_pin_index != -1 && Component.get_wire_index_for_input_pin(input_pin_index) == -1) {
                 connecting_context.targetPin = { int(&Component - &circuit.m_components[0]), input_pin_index };
 				found_target = true;
                 break;
@@ -177,13 +182,27 @@ void App::Update(float deltaTime)
     }
 }
 
-void App::UI() const
+void App::UI() 
 {
     rlImGuiBegin();
+    ImGui::Begin("Components");
+
+    if (ImGui::Button("AND"))
+        selected_component_type = Component::Type::AND;
+    if (ImGui::Button("OR"))
+        selected_component_type = Component::Type::OR;
+    if (ImGui::Button("NOT"))
+        selected_component_type = Component::Type::NOT;
+    if (ImGui::Button("HIGH"))
+        selected_component_type = Component::Type::HIGH;
+    if (ImGui::Button("LOW"))
+        selected_component_type = Component::Type::LOW;
+
+    ImGui::End();
     rlImGuiEnd();
 }
 
-void App::Draw() const
+void App::Draw() 
 { 
     BeginDrawing();
 
@@ -196,14 +215,15 @@ void App::Draw() const
 
     if (current_mouse_state == Connecting)
     {
-        Vector2 start = circuit.getComponent(connecting_context.sourceComponentIndex).getOutputPosition();
+		auto& inputComponent = circuit.getComponent(connecting_context.sourceComponentIndex);
+        Vector2 start = inputComponent.getOutputPosition();
         Vector2 end = GetScreenToWorld2D(GetMousePosition(), camera);
         
         if (connecting_context.targetPin.ComponentIndex != -1) {
 			 end = circuit.getComponent(connecting_context.targetPin.ComponentIndex).getInputPositions()[connecting_context.targetPin.PinIndex];
 		}
 
-        DrawLineEx(start, end, 3, LogicLevel::HIGH ? GREEN : RED);
+        DrawLineEx(start, end, 3, LogicLevelColors[inputComponent.m_component.m_output_pin.value]);
     }
 
 	auto top_left = GetScreenToWorld2D({ 0, 0 }, camera);
