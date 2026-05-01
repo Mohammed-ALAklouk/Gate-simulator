@@ -144,9 +144,9 @@ void App::Update(float deltaTime)
     case Connecting:
     {
         if (IsMouseButtonUp(MouseButton::MOUSE_BUTTON_LEFT)) {
-            if (connecting_context.targetPin.ComponentIndex != -1) {
+            if (connecting_context.targetPin.ComponentID != -1) {
 				circuit.addWire({ connecting_context.sourceComponentIndex, 0 }, connecting_context.targetPin);
-				circuit.set_component_input_wire(connecting_context.targetPin.ComponentIndex, connecting_context.targetPin.PinIndex, circuit.m_wires.size() - 1);
+				circuit.set_component_input_wire(connecting_context.targetPin.ComponentID, connecting_context.targetPin.PinIndex, circuit.m_wires.size() - 1);
             }
             current_mouse_state = Idle;
             break;
@@ -219,8 +219,8 @@ void App::Draw()
         Vector2 start = inputComponent.getOutputPosition();
         Vector2 end = GetScreenToWorld2D(GetMousePosition(), camera);
         
-        if (connecting_context.targetPin.ComponentIndex != -1) {
-			 end = circuit.getComponent(connecting_context.targetPin.ComponentIndex).getInputPositions()[connecting_context.targetPin.PinIndex];
+        if (connecting_context.targetPin.ComponentID != -1) {
+			 end = circuit.getComponent(connecting_context.targetPin.ComponentID).getInputPositions()[connecting_context.targetPin.PinIndex];
 		}
 
         DrawLineEx(start, end, 3, LogicLevelColors[inputComponent.m_component.m_output_pin.value]);

@@ -25,6 +25,6 @@ struct Pin
 
 struct PinRef
 {
-	int ComponentIndex;
+	int ComponentID;
 	int PinIndex;
 };

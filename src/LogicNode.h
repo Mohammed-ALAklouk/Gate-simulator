@@ -7,13 +7,13 @@ class LogicNode
 {
 
 	public:
-	LogicNode(Component::Type ComponentType, int x, int y)
-		: m_component(ComponentType), m_draggable({ (float)(x / 20 * 20), (float)(y / 20 * 20), 100, 100 }, { 0, 0, 255, 255 })
+	LogicNode(Component::Type ComponentType, int x, int y, int id)
+		: m_component(ComponentType), m_draggable({ (float)(x / 20 * 20), (float)(y / 20 * 20), 100, 100 }, { 0, 0, 255, 255 }), id(id)
 	{
 	}
 
-	LogicNode(Component::Type ComponentType, Vector2 position)
-		: LogicNode(ComponentType, position.x, position.y)
+	LogicNode(Component::Type ComponentType, Vector2 position, int id)
+		: LogicNode(ComponentType, position.x, position.y, id)
 	{
 	}
 
@@ -72,4 +72,5 @@ class LogicNode
 
 	Component m_component;
 	Draggable m_draggable;
+	int id;
 };

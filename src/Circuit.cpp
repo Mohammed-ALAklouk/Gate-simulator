@@ -4,7 +4,7 @@ void Circuit::evaluate()
 {
 	for (auto& wire : m_wires)
 	{
-		wire.value = m_components[wire.input.ComponentIndex].m_component.m_output_pin.value;
+		wire.value = getComponent(wire.input.ComponentID).m_component.m_output_pin.value;
 	}
 	
 	for (auto& component : m_components)
@@ -18,15 +18,15 @@ void Circuit::evaluateComponent(Component& component)
 	std::vector<LogicLevel> input_values;
 	for (int i = 0; i < component.m_input_wires.size(); ++i)
 	{
-		int wire_index = component.m_input_wires[i];
-		if (wire_index == -1)
+		int wire_id = component.m_input_wires[i];
+		if (wire_id == -1)
 		{
 			input_values.push_back(LogicLevel::UNDEFINED);
 			continue;
 		}
 
 
-		input_values.push_back(m_wires[wire_index].value);
+		input_values.push_back(getWire(wire_id).value);
 	}
 
 	component.evaluate(input_values);
