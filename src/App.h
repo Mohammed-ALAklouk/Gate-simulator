@@ -20,9 +20,14 @@ struct DraggingContext {
 };
 
 struct ConnectingContext {
-	int sourceComponentIndex;
-
+	int sourceComponentID;
 	PinRef targetPin;
+};
+
+struct SelectionContext {
+	Vector2 selectionStart;
+	Vector2 selectionEnd;
+	Rectangle selectionRect;
 };
 
 struct UITheme {
@@ -54,7 +59,8 @@ private:
 	int window_width = 800;
 	int window_height = 450;
 
-	typedef enum { Idle, Panning, Dragging, Connecting } MouseState;
+	typedef enum { Idle, Panning, Dragging, Connecting, Selecting } MouseState;
+	const std::string mouse_state_names[5] = { "Idle", "Panning", "Dragging", "Connecting", "Selecting" };
 
 	Camera2D camera;
 	const float zoom_levels[6] = { 0.33f, 0.45f, 0.60f, 0.75f, 0.90f, 1.00f };
@@ -66,6 +72,7 @@ private:
 	PanningContext panning_context;
 	DraggingContext dragging_context;
 	ConnectingContext connecting_context;
+	SelectionContext selecting_context;
 
 	Circuit circuit;
 
@@ -75,6 +82,9 @@ private:
 	int major_step = 5;
 	float grid_line_minor_thinkness = 0.8f;
 	float grid_line_major_thinkness = 1.5f;
+
+	std::vector <int> selected_component_ids;
+	int selected_wire_id;
 
 
 	UITheme darkTheme = {

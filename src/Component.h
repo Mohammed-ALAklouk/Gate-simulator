@@ -61,6 +61,7 @@ public:
 	}
 
 	std::vector<int> m_input_wires;
+	std::vector<int> m_output_wires;
 	Pin m_output_pin;
 	std::string m_name;
 	Type m_type;

@@ -31,3 +31,29 @@ void Circuit::evaluateComponent(Component& component)
 
 	component.evaluate(input_values);
 }
+
+void Circuit::draw() 
+{
+	{
+		for (const auto& component : m_components) {
+			std::vector<LogicLevel> inputs;
+			for (int i = 0; i < component.m_component.m_input_wires.size(); ++i) {
+				int wire_id = component.m_component.m_input_wires[i];
+				if (wire_id == -1) {
+					inputs.push_back(LogicLevel::UNDEFINED);
+				}
+				else {
+					inputs.push_back(getWire(wire_id).value);
+				}
+			}
+
+			component.draw(inputs);
+		}
+
+		for (const auto& wire : m_wires) {
+			auto start = getComponent(wire.input.ComponentID).getOutputPosition();
+			auto end = getComponent(wire.output.ComponentID).getInputPositions()[wire.output.PinIndex];
+			DrawLineEx(start, end, 3, LogicLevelColors[wire.value]);
+		}
+	}
+}
