@@ -15,27 +15,11 @@ void LogicNode::draw(std::vector<LogicLevel> inputs) const
 	}
 }
 
-std::vector<Vector2> LogicNode::getInputPositions() const
-{
-	std::vector<Vector2> positions;
-	for (int i = 0; i < m_component.m_input_wires.size(); ++i) {
-		float y = rect.y + rect.height / (m_component.m_input_wires.size() + 1) * (i + 1);
-		positions.push_back({ rect.x, y });
-	}
-	return positions;
-}
-
 int LogicNode::inputPinsContainPoint(Vector2 point) const
 {
-	auto inputPositions = getInputPositions();
 	for (int i = 0; i < m_component.m_input_wires.size(); ++i) {
-		float y = inputPositions[i].y;
-		float x = inputPositions[i].x;
-
-		Vector2 translation = { point.x - x, point.y - y };
-		float distanceSquared = translation.x * translation.x + translation.y * translation.y;
-
-		if (distanceSquared < 25) {
+		Vector2 inputPosition = getInputPosition(i);
+		if (CheckCollisionCircles(point, 5, inputPosition, 5)) {
 			return i;
 		}
 	}

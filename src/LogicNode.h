@@ -16,8 +16,12 @@ class LogicNode
 	}
 
 	void draw(std::vector <LogicLevel> inputs) const;
-	std::vector<Vector2> getInputPositions() const;
 	int inputPinsContainPoint(Vector2 point) const;
+	
+	Vector2 getInputPosition(int i) const {
+		float y = rect.y + rect.height / (m_component.m_input_wires.size() + 1) * (i + 1);
+		return { rect.x, y };
+	}
 
 	bool containsPoint(Vector2 point) const {
 		return CheckCollisionPointRec(point, rect);

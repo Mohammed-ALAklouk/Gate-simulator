@@ -52,7 +52,7 @@ void Circuit::draw()
 
 		for (const auto& wire : m_wires) {
 			auto start = getComponent(wire.input.ComponentID).getOutputPosition();
-			auto end = getComponent(wire.output.ComponentID).getInputPositions()[wire.output.PinIndex];
+			auto end = getComponent(wire.output.ComponentID).getInputPosition(wire.output.PinIndex);
 			DrawLineEx(start, end, 3, LogicLevelColors[wire.value]);
 		}
 	}
