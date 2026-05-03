@@ -10,13 +10,11 @@
 
 struct PanningContext {
 	Vector2 initial_pos;
-	Vector2 initial_target;
+	Vector2 initial_camera_target;
 };
 
 struct DraggingContext {
-	Draggable* draggable;
 	Vector2 initial_mouse_pos;
-	Vector2 initial_draggable_pos;
 };
 
 struct ConnectingContext {
@@ -55,11 +53,28 @@ private:
 	void Draw() ;
 
 	void DrawGrid() const;
+	
+	void UpdateIdleState(const Vector2& mouse_pos);
+	void UpdatePanningState(const Vector2& mouse_pos);
+	void UpdateDraggingState(const Vector2& mouse_pos);
+	void UpdateConnectingState(const Vector2& mouse_pos);
+	void UpdateSelectingState(const Vector2& mouse_pos);
+
+	
 	int cell_size = 20;
 	int window_width = 800;
 	int window_height = 450;
 
 	typedef enum { Idle, Panning, Dragging, Connecting, Selecting } MouseState;
+
+	void(App::* mouse_state_update_functions[5])(const Vector2& mouse_pos) = {
+		&App::UpdateIdleState,
+		&App::UpdatePanningState,
+		&App::UpdateDraggingState,
+		&App::UpdateConnectingState,
+		&App::UpdateSelectingState
+	};
+
 	const std::string mouse_state_names[5] = { "Idle", "Panning", "Dragging", "Connecting", "Selecting" };
 
 	Camera2D camera;

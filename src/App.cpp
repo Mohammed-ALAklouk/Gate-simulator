@@ -13,7 +13,7 @@ App::App()
     rlImGuiSetup(true);
 
     panning_context = { 0, 0 };
-    dragging_context = { nullptr, {0, 0}, {0, 0} };
+    dragging_context = { {0, 0} };
     connecting_context = { -1, { -1, -1 } };
     
     camera = { 0 };
@@ -36,10 +36,21 @@ void App::HandleInput()
         camera.offset = Vector2{ window_width / 2.0f, window_height / 2.0f };
     }
 
+    auto zoom_change = GetMouseWheelMove();
+    if (zoom_change)
+    {
+        int index = current_zoom_index + zoom_change;
+        int max_zoom_index = sizeof(zoom_levels) / sizeof(zoom_levels[0]);
+        if (index >= 0 && index < max_zoom_index) {
+            current_zoom_index = index;
+            camera.zoom = zoom_levels[current_zoom_index];
+        }
+    }
+
     if (IsMouseButtonDown(MouseButton::MOUSE_BUTTON_RIGHT) && !gate_placed)
     {
-        auto mouse_pos = GetScreenToWorld2D(GetMousePosition(), camera);
-		circuit.addComponent(selected_component_type, mouse_pos);
+        auto world_mouse_pos = GetScreenToWorld2D(GetMousePosition(), camera);
+		circuit.addComponent(selected_component_type, world_mouse_pos);
         gate_placed = true;
     }
 
@@ -65,185 +76,9 @@ void App::HandleInput()
 
 void App::Update(float deltaTime)
 {
-	auto mouse_pos = GetScreenToWorld2D(GetMousePosition(), camera);
-    switch (current_mouse_state) {
-    case Idle:
-    {
-		bool is_button_down = IsMouseButtonDown(MouseButton::MOUSE_BUTTON_LEFT);
-        if (is_button_down)
-        {
-            if (IsKeyDown(KeyboardKey::KEY_LEFT_SHIFT))
-            {
-				selecting_context.selectionStart =  mouse_pos;
-                selecting_context.selectionEnd = mouse_pos;
-                current_mouse_state = Selecting;
-				break;
-            }
-
-
-			bool clicked_on_input_pin = false;
-			bool clicked_on_component = false;
-
-            for (auto& Component : circuit.m_components) {
-                if (Component.outputPinContainsPoint(mouse_pos))
-                {
-					connecting_context.sourceComponentID = Component.id;
-                    connecting_context.targetPin = {0, 0};
-					current_mouse_state = Connecting;
-					clicked_on_input_pin = true;
-					break;
-                }
-            
-            }
-            
-			if (clicked_on_input_pin) break;
-
-            for (auto& component : circuit.m_components) {
-				if (component.containsPoint(mouse_pos)) {
-                    current_mouse_state = Dragging;
-                    dragging_context.draggable = &component.m_draggable;
-                    dragging_context.initial_mouse_pos = mouse_pos;
-                    dragging_context.initial_draggable_pos = component.m_draggable.getPosition();
-					clicked_on_component = true;
-
-                    if (std::find(selected_component_ids.begin(), selected_component_ids.end(), component.id) == selected_component_ids.end())
-                    {
-                        selected_component_ids.clear();
-                        selected_component_ids.push_back(component.id);
-                    }
-                    
-                    break;
-                }
-            }
-
-            if (clicked_on_component) break;
-            
-			selected_component_ids.clear();
-			selected_wire_id = -1;
-            current_mouse_state = Panning;
-            panning_context.initial_pos = GetMousePosition();
-            panning_context.initial_target = camera.target;                     
-        }   
-    }
-
-
-        break;
-    case Panning:
-    {
-        if (IsMouseButtonUp(MouseButton::MOUSE_BUTTON_LEFT)) {
-            current_mouse_state = Idle;
-			panning_context = { 0, 0 };
-            break;
-        }
-
-        auto mouse_pos = GetMousePosition();
-    
-        Vector2 delta = {
-            panning_context.initial_pos.x - mouse_pos.x,
-            panning_context.initial_pos.y - mouse_pos.y
-        };
-
-        camera.target = Vector2{
-            panning_context.initial_target.x + (delta.x / camera.zoom),
-            panning_context.initial_target.y + (delta.y / camera.zoom)
-        };
-    }
-
-        break;
-
-    case Dragging:
-    {
-        if (IsMouseButtonUp(MouseButton::MOUSE_BUTTON_LEFT)) {
-            current_mouse_state = Idle;
-			dragging_context = { nullptr, {0, 0}, {0, 0} };
-            break;
-        }
-        auto mouse_pos = GetScreenToWorld2D(GetMousePosition(), camera);
-        Vector2 delta = {
-            mouse_pos.x - dragging_context.initial_mouse_pos.x,
-            mouse_pos.y - dragging_context.initial_mouse_pos.y
-        };
-		dragging_context.initial_mouse_pos = mouse_pos;
-
-        for (int id : selected_component_ids) {
-			auto& component = circuit.getComponent(id);
-			auto position = component.m_draggable.getPosition();
-			component.m_draggable.setPosition({
-				position.x + delta.x,
-				position.y + delta.y
-			});
-        }
-        
-	}
-        break;
-
-    case Connecting:
-    {
-        if (IsMouseButtonUp(MouseButton::MOUSE_BUTTON_LEFT)) {
-            if (connecting_context.targetPin.ComponentID != -1) {  
-				circuit.addWire({ connecting_context.sourceComponentID, 0 }, connecting_context.targetPin);
-				circuit.set_component_input_wire(connecting_context.targetPin.ComponentID, connecting_context.targetPin.PinIndex, circuit.m_wires.size() - 1);
-            }
-
-			connecting_context = { -1, { -1, -1 } };
-            current_mouse_state = Idle;
-            break;
-		}
-
-		bool found_target = false;
-        for (auto& Component : circuit.m_components) {
-			auto input_pin_index = Component.inputPinsContainPoint(mouse_pos);
-            
-            if (input_pin_index != -1 && Component.get_wire_index_for_input_pin(input_pin_index) == -1) {
-                connecting_context.targetPin = { int(&Component - &circuit.m_components[0]), input_pin_index };
-				found_target = true;
-                break;
-			}
-        }
-
-		if (!found_target) 
-			connecting_context.targetPin = { -1, -1 };
-    }
-        break;
-
-    case Selecting:
-    {
-        if (IsMouseButtonUp(MouseButton::MOUSE_BUTTON_LEFT)) {
-            current_mouse_state = Idle;
-			selecting_context = { {0, 0}, {0, 0}, {0, 0, 0, 0} };
-            break;
-        }
-
-        selecting_context.selectionEnd = mouse_pos;
-
-        Vector2 topLeft = {
-            std::min(selecting_context.selectionStart.x, selecting_context.selectionEnd.x),
-            std::min(selecting_context.selectionStart.y, selecting_context.selectionEnd.y)
-		};
-
-        Vector2 size = {
-            std::abs(selecting_context.selectionEnd.x - selecting_context.selectionStart.x),
-            std::abs(selecting_context.selectionEnd.y - selecting_context.selectionStart.y)
-        };
-		selecting_context.selectionRect = { topLeft.x, topLeft.y, size.x, size.y };
-
-		selected_component_ids.clear();
-        circuit.selectComponentsInArea(selecting_context.selectionRect, selected_component_ids);
-    }
-        break;
-    }
-
-    auto zoom_change = GetMouseWheelMove();
-
-    if (zoom_change)
-    {
-        int index = current_zoom_index + zoom_change;
-        int max_zoom_index = sizeof(zoom_levels) / sizeof(zoom_levels[0]);
-        if (index >= 0 && index < max_zoom_index) {
-            current_zoom_index = index;
-            camera.zoom = zoom_levels[current_zoom_index];
-        }
-    }
+	auto world_mouse_pos = GetScreenToWorld2D(GetMousePosition(), camera);
+	auto mouse_state_update = mouse_state_update_functions[current_mouse_state];
+	(this->*mouse_state_update)(world_mouse_pos);
 }
 
 void App::UI() 
@@ -334,6 +169,162 @@ void App::DrawGrid() const
 
         DrawLineEx({ min.x, y }, { max.x, y }, adjustedThickness, color);
     }
+}
+
+void App::UpdateIdleState(const Vector2& world_mouse_pos)
+{
+    bool is_button_down = IsMouseButtonDown(MouseButton::MOUSE_BUTTON_LEFT);
+    if (is_button_down)
+    {
+        if (IsKeyDown(KeyboardKey::KEY_LEFT_SHIFT))
+        {
+            selecting_context.selectionStart = world_mouse_pos;
+            selecting_context.selectionEnd = world_mouse_pos;
+            current_mouse_state = Selecting;
+            return;
+        }
+
+
+        bool clicked_on_input_pin = false;
+        bool clicked_on_component = false;
+
+        for (auto& Component : circuit.m_components) {
+            if (Component.outputPinContainsPoint(world_mouse_pos))
+            {
+                connecting_context.sourceComponentID = Component.id;
+                connecting_context.targetPin = { 0, 0 };
+                current_mouse_state = Connecting;
+                clicked_on_input_pin = true;
+                break;
+            }
+
+        }
+
+        if (clicked_on_input_pin) return;
+
+        for (auto& component : circuit.m_components) {
+            if (component.containsPoint(world_mouse_pos)) {
+                current_mouse_state = Dragging;
+                dragging_context.initial_mouse_pos = world_mouse_pos;
+                clicked_on_component = true;
+
+                if (std::find(selected_component_ids.begin(), selected_component_ids.end(), component.id) == selected_component_ids.end())
+                {
+                    selected_component_ids.clear();
+                    selected_component_ids.push_back(component.id);
+                }
+
+                break;
+            }
+        }
+
+        if (clicked_on_component) return;
+
+        selected_component_ids.clear();
+        selected_wire_id = -1;
+        current_mouse_state = Panning;
+        panning_context.initial_pos = GetMousePosition();
+        panning_context.initial_camera_target = camera.target;
+    }
+
+}
+
+void App::UpdatePanningState(const Vector2& world_mouse_pos)
+{
+    if (IsMouseButtonUp(MouseButton::MOUSE_BUTTON_LEFT)) {
+        current_mouse_state = Idle;
+        panning_context = { {0, 0}, {0, 0} };
+        return;
+    }
+
+	auto screen_mouse_pos = GetMousePosition();
+
+    Vector2 delta = {
+        panning_context.initial_pos.x - screen_mouse_pos.x,
+        panning_context.initial_pos.y - screen_mouse_pos.y
+    };
+
+    camera.target = Vector2{
+        panning_context.initial_camera_target.x + (delta.x / zoom_levels[current_zoom_index]),
+        panning_context.initial_camera_target.y + (delta.y / zoom_levels[current_zoom_index])
+    };
+}
+
+void App::UpdateDraggingState(const Vector2& world_mouse_pos)
+{
+    if (IsMouseButtonUp(MouseButton::MOUSE_BUTTON_LEFT)) {
+        current_mouse_state = Idle;
+        dragging_context = { {0, 0} };
+        return;
+    }
+    
+    Vector2 delta = {
+        world_mouse_pos.x - dragging_context.initial_mouse_pos.x,
+        world_mouse_pos.y - dragging_context.initial_mouse_pos.y
+    };
+    dragging_context.initial_mouse_pos = world_mouse_pos;
+
+    for (int id : selected_component_ids) {
+        auto& component = circuit.getComponent(id);
+        auto position = component.m_draggable.getPosition();
+        component.m_draggable.setPosition({
+            position.x + delta.x,
+            position.y + delta.y
+            });
+    }
+}
+
+void App::UpdateConnectingState(const Vector2& world_mouse_pos)
+{
+    if (IsMouseButtonUp(MouseButton::MOUSE_BUTTON_LEFT)) {
+        if (connecting_context.targetPin.ComponentID != -1) {
+            circuit.addWire({ connecting_context.sourceComponentID, 0 }, connecting_context.targetPin);
+            circuit.set_component_input_wire(connecting_context.targetPin.ComponentID, connecting_context.targetPin.PinIndex, circuit.m_wires.size() - 1);
+        }
+
+        connecting_context = { -1, { -1, -1 } };
+        current_mouse_state = Idle;
+        return;
+    }
+
+    bool found_target = false;
+    for (auto& Component : circuit.m_components) {
+        auto input_pin_index = Component.inputPinsContainPoint(world_mouse_pos);
+
+        if (input_pin_index != -1 && Component.get_wire_index_for_input_pin(input_pin_index) == -1) {
+            connecting_context.targetPin = { int(&Component - &circuit.m_components[0]), input_pin_index };
+            found_target = true;
+            return;
+        }
+    }
+
+    if (!found_target)
+        connecting_context.targetPin = { -1, -1 };
+}
+
+void App::UpdateSelectingState(const Vector2& world_mouse_pos)
+{
+    if (IsMouseButtonUp(MouseButton::MOUSE_BUTTON_LEFT)) {
+        current_mouse_state = Idle;
+        selecting_context = { {0, 0}, {0, 0}, {0, 0, 0, 0} };
+        return;
+    }
+
+    selecting_context.selectionEnd = world_mouse_pos;
+
+    Vector2 topLeft = {
+        std::min(selecting_context.selectionStart.x, selecting_context.selectionEnd.x),
+        std::min(selecting_context.selectionStart.y, selecting_context.selectionEnd.y)
+    };
+
+    Vector2 size = {
+        std::abs(selecting_context.selectionEnd.x - selecting_context.selectionStart.x),
+        std::abs(selecting_context.selectionEnd.y - selecting_context.selectionStart.y)
+    };
+    selecting_context.selectionRect = { topLeft.x, topLeft.y, size.x, size.y };
+
+    selected_component_ids.clear();
+    circuit.selectComponentsInArea(selecting_context.selectionRect, selected_component_ids);
 }
 
 void App::Run()
