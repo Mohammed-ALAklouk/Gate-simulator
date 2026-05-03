@@ -266,11 +266,9 @@ void App::UpdateDraggingState(const Vector2& world_mouse_pos)
 
     for (int id : selected_component_ids) {
         auto& component = circuit.getComponent(id);
-        auto position = component.m_draggable.getPosition();
-        component.m_draggable.setPosition({
-            position.x + delta.x,
-            position.y + delta.y
-            });
+        auto position = component.rect;
+        component.rect.x = position.x + delta.x;
+        component.rect.y = position.y + delta.y;
     }
 }
 

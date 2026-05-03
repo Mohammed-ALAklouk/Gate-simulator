@@ -96,7 +96,7 @@ public:
 
 	void selectComponentsInArea(Rectangle selectionRect, std::vector<int>& selectedComponentIDs) const {
 		for (const auto& component : m_components) {
-			if (CheckCollisionRecs(component.m_draggable.rect, selectionRect)) {
+			if (CheckCollisionRecs(component.rect, selectionRect)) {
 				selectedComponentIDs.push_back(component.id);
 			}
 		}
