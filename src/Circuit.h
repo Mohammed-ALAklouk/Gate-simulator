@@ -11,7 +11,7 @@ class Circuit
 public:
 	void evaluate();
 	void evaluateComponent(Component& component);
-	void draw() ;
+	void draw(const std::vector<int>& selectedComponentIDs, int hoveredComponentID) ;
 
 	void addComponent(Component::Type type, Vector2 position) {
 		int id = m_component_ids.getNextId();

@@ -99,6 +99,7 @@ private:
 	float grid_line_major_thinkness = 1.5f;
 
 	std::vector <int> selected_component_ids;
+	int hovered_component_id = -1;
 	int selected_wire_id;
 
 

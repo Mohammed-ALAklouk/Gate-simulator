@@ -17,9 +17,9 @@ class LogicNode
 	{
 	}
 
-	void draw(std::vector <LogicLevel> inputs) const;
+	void draw(std::vector <LogicLevel> inputs, bool selected, bool highlighted) const;
 	int inputPinsContainPoint(Vector2 point) const;
-	
+
 	Vector2 getInputPosition(int i) const {
 		float y = rect.y + rect.height / (m_component.m_input_wires.size() + 1) * (i + 1);
 		return { rect.x, y };
@@ -45,7 +45,8 @@ class LogicNode
 
 	Component m_component;
 	Rectangle rect;
-	Color color{ 40, 44, 52, 255 };
+	Color body_top = { 45, 50, 62, 255 };
+	Color body_bot = { 32, 36, 46, 255 };
 	Color AccentColor{ 0, 180, 120, 255 };
 	Color BorderColor{ 80, 85, 95, 255 };
 	Color BorderHighlightColor{ 100, 160, 255, 255 };

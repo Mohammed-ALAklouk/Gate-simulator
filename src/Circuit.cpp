@@ -32,7 +32,7 @@ void Circuit::evaluateComponent(Component& component)
 	component.evaluate(input_values);
 }
 
-void Circuit::draw() 
+void Circuit::draw(const std::vector<int>& selectedComponentIDs, int hoveredComponentID) 
 {
 	{
 		for (const auto& component : m_components) {
@@ -47,7 +47,9 @@ void Circuit::draw()
 				}
 			}
 
-			component.draw(inputs);
+			bool highlighted = (component.id == hoveredComponentID);
+			bool selected = (std::find(selectedComponentIDs.begin(), selectedComponentIDs.end(), component.id) != selectedComponentIDs.end());
+			component.draw(inputs, highlighted, selected);
 		}
 
 		for (const auto& wire : m_wires) {

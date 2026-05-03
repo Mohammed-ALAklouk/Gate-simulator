@@ -1,12 +1,14 @@
 #include "LogicNode.h"
 
-void LogicNode::draw(std::vector<LogicLevel> inputs) const
+void LogicNode::draw(std::vector<LogicLevel> inputs, bool selected, bool highlighted) const
 {
-	Color body_top = { 45, 50, 62, 255 };
-	Color body_bot = { 32, 36, 46, 255 };
+	Color borderColor = BorderColor;
+	if (highlighted) borderColor = BorderHighlightColor;
+	if (selected) borderColor = BorderSelectedColor;
+
 	DrawRectangleGradientV(rect.x, rect.y, rect.width, rect.height, body_top, body_bot);
 	DrawRectangle(rect.x, rect.y, 3.0f, rect.height, AccentColor);
-	DrawRectangleRoundedLinesEx(rect, 0.1f, 4, 1.5f , BorderColor);
+	DrawRectangleRoundedLinesEx(rect, 0.1f, 4, 1.5f , borderColor);
 
 	
 	

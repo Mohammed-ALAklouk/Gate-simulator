@@ -110,7 +110,7 @@ void App::Draw()
 
     DrawGrid();
 
-	circuit.draw();
+	circuit.draw(selected_component_ids, hovered_component_id);
 
     if (current_mouse_state == Connecting)
     {
@@ -226,6 +226,16 @@ void App::UpdateIdleState(const Vector2& world_mouse_pos)
         panning_context.initial_pos = GetMousePosition();
         panning_context.initial_camera_target = camera.target;
     }
+    else 
+    {
+        hovered_component_id = -1;
+        for (auto& component : circuit.m_components) {
+            if (component.containsPoint(world_mouse_pos)) {
+                hovered_component_id = component.id;
+                break;
+            }
+        }
+	}
 
 }
 
