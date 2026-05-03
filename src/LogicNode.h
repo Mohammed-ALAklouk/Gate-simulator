@@ -1,12 +1,14 @@
 #pragma once
 #include "Component.h"
 
+#define PIN_RADIUS 4 
+
 class LogicNode 
 {
 
 	public:
 	LogicNode(Component::Type ComponentType, int x, int y, int id)
-		: m_component(ComponentType), rect({ (float)(x / 20 * 20), (float)(y / 20 * 20), 100, 100 }), color({ 0, 0, 255, 255 }), id(id)
+		: m_component(ComponentType), rect({ (float)(x / 20 * 20), (float)(y / 20 * 20), 80, 60 }), id(id)
 	{
 	}
 
@@ -38,11 +40,15 @@ class LogicNode
 	}
 
 	bool outputPinContainsPoint(Vector2 point) const {
-		return CheckCollisionCircles(point, 5, getOutputPosition(), 5);
+		return CheckCollisionCircles(point, PIN_RADIUS, getOutputPosition(), PIN_RADIUS);
 	}
 
 	Component m_component;
 	Rectangle rect;
-	Color color;
+	Color color{ 40, 44, 52, 255 };
+	Color AccentColor{ 0, 180, 120, 255 };
+	Color BorderColor{ 80, 85, 95, 255 };
+	Color BorderHighlightColor{ 100, 160, 255, 255 };
+	Color BorderSelectedColor{ 0, 150, 255, 255 };
 	int id;
 };

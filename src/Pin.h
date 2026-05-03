@@ -2,9 +2,9 @@
 #include <raylib.h>
 
 static Color LogicLevelColors[] = {
-	GRAY, // LOW
-	GREEN, // HIGH
-	RED // UNDEFINED
+	{60, 60, 60, 255}, // LOW
+	{0, 220, 80, 255}, // HIGH
+	{255, 150, 0, 255} // UNDEFINED
 };
 
 enum LogicLevel

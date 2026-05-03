@@ -3,7 +3,7 @@
 App::App()
 {
     SetTraceLogLevel(LOG_ERROR);
-
+    SetConfigFlags(FLAG_MSAA_4X_HINT);
     SetConfigFlags(FLAG_WINDOW_HIDDEN | FLAG_WINDOW_RESIZABLE);
     InitWindow(window_width, window_height, "GateSimulator");
     MaximizeWindow();
@@ -129,7 +129,7 @@ void App::Draw()
 	auto top_left = GetScreenToWorld2D({ 0, 0 }, camera);
     std::string state_text = mouse_state_names[current_mouse_state];
     DrawText(("State: " + state_text).c_str(), top_left.x, top_left.y, 20, RED);
-    
+
     EndMode2D();
 
     UI();
