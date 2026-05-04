@@ -20,14 +20,13 @@ public:
 	}
 
 	void set_component_input_wire(int componentID, int input_index, int wire_ID) {
-		int component_index = m_component_ids.getIndex(componentID);
-		m_components[component_index].m_component.m_input_wires[input_index] = wire_ID;
+		auto& component = getComponent(componentID);
+		component.m_component.m_input_wires[input_index] = wire_ID;
 	}
 
 	void addWire(PinRef input, PinRef output) {
 		int id = m_wire_ids.getNextId();
-		int input_component_index = m_component_ids.getIndex(input.ComponentID);
-		auto& input_component = m_components[input_component_index];
+		auto& input_component = getComponent(input.ComponentID);
 		input_component.m_component.m_output_wires.push_back(id);
 		m_wires.push_back({ input, output, input_component.m_component.m_output_pin.value, id });
 		m_wire_ids.setIndex(id, m_wires.size() - 1);
@@ -46,7 +45,7 @@ public:
 	void removeComponent(int id) {
 		int index = m_component_ids.getIndex(id);
 		if (index != -1) {
-			auto& component = m_components[index];
+			auto& component = getComponent(id);
 			for (int input_wire_id : component.m_component.m_input_wires) {
 				removeWire(input_wire_id);
 			}
@@ -69,13 +68,13 @@ public:
 	void removeWire(int id) {
 		int index = m_wire_ids.getIndex(id);
 		if (index != -1) {
-			auto& wire = m_wires[index];
-			auto& input_component = m_components[m_component_ids.getIndex(wire.input.ComponentID)];
+			auto& wire = getWire(id);
+			auto& input_component = getComponent(wire.input.ComponentID);
 			input_component.m_component.m_output_wires.erase(
 				std::remove( input_component.m_component.m_output_wires.begin(), input_component.m_component.m_output_wires.end(), id), 
 				input_component.m_component.m_output_wires.end());
 
-			auto& output_component = m_components[m_component_ids.getIndex(wire.output.ComponentID)];
+			auto& output_component = getComponent(wire.output.ComponentID);
 			for (auto& input_wire_id : output_component.m_component.m_input_wires) {
 				if (input_wire_id == id) {
 					input_wire_id = -1;
@@ -104,18 +103,7 @@ public:
 
 
 	std::vector<LogicNode> m_components;
-	std::vector<Wire>m_wires;
+	std::vector<Wire> m_wires;
 	IdManager m_component_ids;
 	IdManager m_wire_ids;
-
-private:
-	LogicNode& getNodeById(int id) {
-		int index = m_component_ids.getIndex(id);
-		return m_components[index];
-	}
-
-	Wire& getWireById(int id) {
-		int index = m_wire_ids.getIndex(id);
-		return m_wires[index];
-	}
 };

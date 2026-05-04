@@ -102,6 +102,11 @@ private:
 	int hovered_component_id = -1;
 	int selected_wire_id;
 
+	bool is_simulation_running = false;
+	float ticks_per_second = 0.5f;
+	float time_since_last_tick = 0.0f;
+	int number_of_ticks = 0;
+
 
 	UITheme darkTheme = {
 	{ 18, 18, 18, 255 },

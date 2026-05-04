@@ -79,6 +79,17 @@ void App::Update(float deltaTime)
 	auto world_mouse_pos = GetScreenToWorld2D(GetMousePosition(), camera);
 	auto mouse_state_update = mouse_state_update_functions[current_mouse_state];
 	(this->*mouse_state_update)(world_mouse_pos);
+
+    if (is_simulation_running)
+	{
+		time_since_last_tick += deltaTime;
+		if (time_since_last_tick >= 1.0f / ticks_per_second)
+		{
+			circuit.evaluate();
+			time_since_last_tick -= 1.0f / ticks_per_second;
+			number_of_ticks++;
+		}
+	}
 }
 
 void App::UI() 
@@ -98,6 +109,26 @@ void App::UI()
         selected_component_type = Component::Type::LOW;
 
     ImGui::End();
+
+	ImGui::Begin("Simulation");
+    if (ImGui::Button("Step"))
+    {
+		circuit.evaluate();
+		number_of_ticks++;
+    }
+
+	if (ImGui::Button(is_simulation_running ? "Stop" : "Run"))
+		is_simulation_running = !is_simulation_running;
+
+    if (ImGui::SliderFloat("Ticks per second", &ticks_per_second, 0.5f, 60.0f, "%.1f"))
+    {
+        time_since_last_tick = 0.0f; // Reset timer to avoid long wait after changing speed
+	}
+
+	ImGui::Text(("Ticks: " + std::to_string(number_of_ticks)).c_str());
+
+	ImGui::End();
+
     rlImGuiEnd();
 }
 
